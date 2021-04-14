@@ -1,34 +1,59 @@
-import React, { Component } from "react";
-import { createPortal } from "react-dom";
-import PropTypes from "prop-types";
+import { Component } from 'react';
+import PropTypes from 'prop-types';
+import s from './Modal.module.css';
+import img from '../../img/404_error.jpg';
 
-import s from "./Modal.module.css";
+export default class Modal extends Component {
+  static defaultProps = {
+    src: img,
+  };
 
-const modalRoot = document.getElementById("modal-root");
-
-class Modal extends Component {
   static propTypes = {
-    onBackdrop: PropTypes.func.isRequired,
-    content: PropTypes.string.isRequired,
+    src: PropTypes.string,
   };
 
-  handleBackdropClick = (e) => {
-    if (e.target === e.currentTarget) {
-      this.props.onBackdrop();
-    }
+  state = {
+    modal: false,
   };
+
+  componentDidMount() {
+    if (this.props.src !== '') {
+      this.setState({ modal: true });
+    }
+    window.addEventListener('keydown', e => {
+      if (e.code === 'Escape') {
+        this.setState({ modal: false });
+      }
+    });
+    window.addEventListener('click', e => {
+      if (e.target.alt !== 'img') {
+        this.setState({ modal: false });
+      }
+      if (e.target.alt === 'img') {
+        this.setState({ modal: true });
+      }
+    });
+  }
+  componentDidUpdate(prevProps, prevState) {
+    window.removeEventListener('keydown', e => {
+      if (e.target.alt !== 'img') {
+        this.setState({ modal: false });
+      }
+      if (e.target.alt === 'img') {
+        this.setState({ modal: true });
+      }
+    });
+  }
 
   render() {
-    const { content } = this.props;
-    return createPortal(
-      <div className={s.Overlay} onClick={this.handleBackdropClick}>
-        <div className={s.Modal}>
-          <img src={content} alt="" />
+    return (
+      this.state.modal && (
+        <div className={s.Overlay}>
+          <div className={s.Modal}>
+            <img src={this.props.src} alt="img" />
+          </div>
         </div>
-      </div>,
-      modalRoot
+      )
     );
   }
 }
-
-export default Modal;
